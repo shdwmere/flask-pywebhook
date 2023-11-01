@@ -17,7 +17,7 @@ def webhook_listener():
     dados_evento = request.get_json()
 
     # Logic Handle
-
+    nome_cliente = dados_evento.get('data', {}).get('customer', {}).get('name')
 
 
     # End Logic Handle
@@ -37,7 +37,7 @@ def webhook_listener():
         # 'id_pedido': id_pedido,
         # 'codigo_rastreio': codigo_rastreio,
         # 'cpf': cpf,
-        # 'nome': nome,
+        'nome_cliente': nome_cliente
         # 'email': email,
         # 'data_registro': data_registro
         })
