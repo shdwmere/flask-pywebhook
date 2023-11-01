@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, requests
+from flask import Flask, render_template, request
+import requests
 from datetime import datetime
 import random, json
 
