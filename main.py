@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import requests
 from datetime import datetime
 import random, json
+import pytz
 
 app = Flask(__name__)
 
@@ -32,13 +33,14 @@ def webhook_listener():
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
-    data_registro_unformatted = dados_evento.get('data', {}).get('createdAt')
-    # fomatando a data de registro
-    data_obj = datetime.strptime(data_registro_unformatted, '%Y-%m-%dT%H:%M:%S.%fZ')
-    data_registro_formatada = data_obj.strftime('%Y-%m-%d')
+
+    # Obtendo o fuso horário de Brasília
+    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_hora_brasilia = datetime.now(fuso_horario_brasilia)
+    data_hora_formatada_brasilia = data_hora_brasilia.strftime('%Y-%m-%d')
 
     # passando horario do evento para logs
-    momento_evento = data_registro_formatada
+    momento_evento = data_hora_formatada_brasilia
     logs.append({
         'momento_evento': momento_evento,
         'nome': nome,
