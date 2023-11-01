@@ -1,12 +1,12 @@
 ---
 title: Flask
-description: A popular minimal server framework for Python
+description: Handles events from payment gateway.
 tags:
   - python
   - flask
 ---
 
-# Our own payment gateway WebHook with Flask.
+# Python Webhook with Flask server framework.
 
 ## ✨ Features
 
