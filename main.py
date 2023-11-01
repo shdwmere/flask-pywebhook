@@ -17,31 +17,26 @@ def webhook_listener():
     dados_evento = request.get_json()
 
     # Logic Handle
-    nome_cliente = dados_evento.get('data', {}).get('customer', {}).get('name')
+
 
 
     # End Logic Handle
     
     # Logs handling
-    id_pedido = dados_evento.get('id_pedido')
-    codigo_rastreio = dados_evento.get('codigo_rastreio')
-    cpf = dados_evento.get('cpf')
-    nome = dados_evento.get('nome')
-    email = dados_evento.get('email')
-    data_registro = dados_evento.get('data_registro')
+    nome = dados_evento.get('data', {}).get('customer', {}).get('name')
+    cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
+    email = dados_evento.get('data', {}).get('customer', {}).get('email')
+    status_pagamento = dados_evento.get('data', {}).get('status')
+
     # passando horario do evento para logs
     momento_evento = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
     logs.append({
-        # 'momento_evento': momento_evento,
-        'dados_evento': dados_evento,
-        # 'id_pedido': id_pedido,
-        # 'codigo_rastreio': codigo_rastreio,
-        # 'cpf': cpf,
-        'nome_cliente': nome_cliente
-        # 'email': email,
-        # 'data_registro': data_registro
-        })
-
+        'momento_evento': momento_evento,
+        'nome': nome,
+        'cpf': cpf,
+        'email': email,
+        'status_pagamento': status_pagamento
+    })
     # Responder com status code OK
     return '', 200
 

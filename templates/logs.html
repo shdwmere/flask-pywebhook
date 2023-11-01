@@ -15,13 +15,11 @@
             {% for log in logs %}
             <div class="bg-gray-100 w-full px-5 py-2">
                 <h3 class="font-semibold text-gray-700">{{ log['momento_evento'] }}</h3>
-                <li class="text-gray-600">{{ log['dados_evento'] }}</li>
-                <li class="text-gray-600">nome: {{ log['nome_cliente'] }}</li>
-                <!-- <li class="text-gray-600">ID: {{ log['id_pedido'] }}</li>
-                <li class="text-gray-600">codigo de rastreio: {{ log['codigo_rastreio'] }}</li>
+                <!-- <li class="text-gray-600">{{ log['dados_evento'] }}</li> -->
+                <li class="text-gray-600">nome: {{ log['nome'] }}</li>
                 <li class="text-gray-600">cpf: {{ log['cpf'] }}</li>
                 <li class="text-gray-600">email: {{ log['email'] }}</li>
-                <li class="text-gray-600">data de registro: {{ log['data_registro'] }}</li> -->
+                <li class="text-gray-600">status pgt: {{ log['status_pagamento'] }}</li>
             </div>
             {% endfor %}
         </ul>
