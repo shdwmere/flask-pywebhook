@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 logs = []
 
-
 # Rota index
 @app.route('/')
 def index():
