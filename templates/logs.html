@@ -2,13 +2,30 @@
 <html>
 <head>
     <title>Logs</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <h1>Logs</h1>
-    <ul>
-        {% for log in logs %}
-            <li>{{ log }}</li>
-        {% endfor %}
-    </ul>
+    <div class="flex flex-col my-12 p-5 justify-center items-center">
+
+        <h1 class="font-semibold text-2xl mb-3">Eventos Capturados</h1>
+
+        <ul class="flex flex-col border-2 border-green-500 bg-gray-800 gap-3 py-4 rounded-xl">
+            {% for log in logs %}
+            <div class="bg-gray-100 w-full px-5 py-2">
+                <h3 class="font-semibold text-gray-700">{{ log['momento_evento'] }}</h3>
+                <li class="text-gray-600">{{ log['dados_evento'] }}</li>
+                <!-- <li class="text-gray-600">ID: {{ log['id_pedido'] }}</li>
+                <li class="text-gray-600">codigo de rastreio: {{ log['codigo_rastreio'] }}</li>
+                <li class="text-gray-600">cpf: {{ log['cpf'] }}</li>
+                <li class="text-gray-600">nome: {{ log['nome'] }}</li>
+                <li class="text-gray-600">email: {{ log['email'] }}</li>
+                <li class="text-gray-600">data de registro: {{ log['data_registro'] }}</li> -->
+            </div>
+            {% endfor %}
+        </ul>
+
+    </div>
 </body>
 </html>
