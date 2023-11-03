@@ -3,6 +3,9 @@ import requests
 from datetime import datetime
 import random, json
 import pytz
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 
@@ -19,12 +22,6 @@ def webhook_listener():
 
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
-    
-    # geradores
-    onze_chars = random.randint(11111111111, 99999999999)
-    doze_chars = random.randint(111111111111, 999999999999)
-    id_gerado = '#' + str(onze_chars)
-    codigo_gerado = 'BR' + str(doze_chars)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -36,11 +33,11 @@ def webhook_listener():
 
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_hora_brasilia = datetime.now(fuso_horario_brasilia)
-    data_hora_formatada_brasilia = data_hora_brasilia.strftime('%Y-%m-%d')
+    data_brasilia = datetime.now(fuso_horario_brasilia)
+    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+    momento_evento = data_brasilia_formatada
 
-    # passando horario do evento para logs
-    momento_evento = data_hora_formatada_brasilia
+    # passando dados para o template de logs.
     logs.append({
         'momento_evento': momento_evento,
         'nome': nome,
@@ -51,6 +48,12 @@ def webhook_listener():
     # End Logs handling
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # geradores
+    onze_chars = random.randint(11111111111, 99999999999)
+    doze_chars = random.randint(111111111111, 999999999999)
+    id_gerado = '#' + str(onze_chars)
+    codigo_gerado = 'BR' + str(doze_chars)
 
     # API Logic Handle
     uri = "https://djamba-production.up.railway.app/api/pedidos/create/"
@@ -63,9 +66,11 @@ def webhook_listener():
     "email_cliente": email,
     "data_registro": momento_evento,
     }
+
     # converte os dados em formato JSON
     corpo_json = json.dumps(payload_cliente)
 
+    # definindo Header da requisicao
     headers = {"Content-Type": "application/json"}
 
     if status_pagamento == 'paid':
@@ -90,10 +95,48 @@ def webhook_listener():
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Mailing Handle
-    # //
+        
+    # Mail Config
+    host_smtp = 'smtp.hostinger.com'
+    remetente = 'contato@lojashopee.shop'
+    password = 'o0cbDdFeComm@777'
+
+    destinatario = email
+    assunto = 'Recebemos o seu pedido'
+    mensagem_html = f'<html><body><h1>Pedido confirmado!</h1> <p>Prezado {nome}, recebemos o seu pedido <b>ID: {id_gerado}</b>.</p> <p>Pedimos para que aguarde o prazo de 72h que enviaremos o código de rastreio de sua encomenda.</p> <p>Agradecemos a preferência, Equipe Shopee.</p></body></html>'
+
+
+    if status_pagamento == 'paid':
+        try:
+            print(f"\033[0;35m Conectando ao servidor SMTP: '{host_smtp}'... \033[0m")
+            server = smtplib.SMTP_SSL(host_smtp, port=465)
+
+            print(f"\033[0;35m Logando no e-mail: '{remetente}'... \033[0m")
+            server.login(remetente, password)
+
+            print(f"\033[0;33m Criando mensagem HTML... \033[0m")
+            msg = MIMEMultipart()
+            msg['From'] = remetente
+            msg['To'] = destinatario
+            msg['Subject'] = assunto
+            msg.attach(MIMEText(mensagem_html, 'html'))
+
+            print(f"\033[0;36m Enviando o e-mail... \033[0m")
+            server.sendmail(remetente, destinatario, msg.as_string())
+
+
+            print(f'\033[1;32m E-mail enviado com sucesso. \033[0m')
+            server.quit()
+        except smtplib.SMTPException as e:
+            print(f'\033[1;31m Falha ao enviar o e-mail: {str(e)} \033[0m')
+        except Exception as e:
+            print(f'Erro inesperado: {str(e)}')
+    else:
+        print('Sem pagamento, sem notificação.')
+    
     # End Mailing Handle
 
-    # Responder com status code OK
+    # Responder requisicoes com status code OK
     return '', 200
 
 # Captura de logs
