@@ -26,24 +26,36 @@ def webhook_listener():
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Logs handling
+    """
     nome = dados_evento.get('data', {}).get('customer', {}).get('name')
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
+    """
+
+    nome = dados_evento.get('nome')
+    cpf = dados_evento.get('cpf')
+    email = dados_evento.get('email')
+    status_pagamento = dados_evento.get('status')
+
 
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     data_brasilia = datetime.now(fuso_horario_brasilia)
     data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
+    hora_evento = data_brasilia.strftime('%H:%M:%S')
     momento_evento = data_brasilia_formatada
 
+    # para os logs
+    data_logs = data_brasilia.strftime('%d/%m/%Y')
 
     # passando dados para o template de logs.
     logs.append({
-        'momento_evento': momento_evento,
+        'data_logs': data_logs,
+        'hora_evento': hora_evento,
         'nome': nome,
-        'cpf': cpf,
-        'email': email,
+        # 'cpf': cpf,
+        # 'email': email,
         'status_pagamento': status_pagamento
     })
     # End Logs handling
@@ -80,7 +92,8 @@ def webhook_listener():
             resultado.raise_for_status()  # Lança uma exceção se o status da resposta não for 2xx
 
             resposta = resultado.json()
-            print(f"Dados enviados com sucesso: {resposta}")
+            print('Pagamento identificado com sucesso!')
+            print(f"\033[1;32m Dados enviados com sucesso: \033[0;36m{resposta}\033[0m \033[0m")
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
@@ -145,5 +158,31 @@ def webhook_listener():
 def show_logs():
     return render_template('logs.html', logs=logs, current_time=datetime.now())
 
+
+def filtrar_logs_por_data(logs, data):
+    logs_filtrados = []
+
+    # Convertendo a string da data filtrada para o formato datetime
+    data_filtrada = datetime.strptime(data, '%Y-%m-%d')
+
+    for log in logs:
+        data_logs = datetime.strptime(log['data_logs'], '%d/%m/%Y')
+        
+        if data_logs.date() == data_filtrada.date():
+            logs_filtrados.append(log)
+    
+    return logs_filtrados
+
+
+# Rota para filtrar os logs por data
+@app.route('/filtro_data', methods=['GET'])
+def filtro_data():
+    data_selecionada = request.args.get('data_filtrada')
+    # Lógica para filtrar os registros de log pela data selecionada
+    logs_filtrados = filtrar_logs_por_data(logs, data_selecionada)
+    return render_template('logs.html', logs=logs_filtrados)
+
+
+# rodando server em qualquer interface
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

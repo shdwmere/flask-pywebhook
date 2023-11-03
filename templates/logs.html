@@ -11,18 +11,43 @@
 
         <h1 class="font-semibold text-2xl mb-3">Eventos Capturados</h1>
 
-        <ul class="flex flex-col border-2 border-green-500 bg-gray-800 gap-3 py-4 rounded-xl">
+        <form method="GET" action="{{ url_for('filtro_data') }}" class="mb-4 items-left">
+            <label for="data_filtrada" class="block font-bold text-white text-lg">Filtrar por data:</label>
+            <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border border-gray-300 rounded">
+            <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
+        </form>
+        
+
+        <table class="bg-gray-100 text-center rounded-xl shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
+            <tr>
+                <th class="px-5 py-2 text-gray-700 font-semibold"></th>
+                <th class="px-5 py-2 text-gray-700 font-semibold">Data e Hora</th>
+                <th class="px-5 py-2 text-gray-700 font-semibold">Nome</th>
+                <th class="px-5 py-2 text-gray-700 font-semibold">Status Pagamento</th>
+            </tr>
             {% for log in logs %}
-            <div class="bg-gray-100 w-full px-5 py-2">
-                <h3 class="font-semibold text-gray-700">{{ log['momento_evento'] }}</h3>
-                <!-- <li class="text-gray-600">{{ log['dados_evento'] }}</li> -->
-                <li class="text-gray-600">nome: {{ log['nome'] }}</li>
-                <li class="text-gray-600">cpf: {{ log['cpf'] }}</li>
-                <li class="text-gray-600">email: {{ log['email'] }}</li>
-                <li class="text-gray-600">status pgt: {{ log['status_pagamento'] }}</li>
-            </div>
+            <tr>
+
+                {% if log['status_pagamento'] == 'paid' %}
+                <td class="px-5 py-2 text-green-600 font-semibold">🟢</td>
+                {% elif log['status_pagamento'] == 'waiting_payment' %}
+                <td class="px-5 py-2 text-orange-600 font-semibold">🟠</td>
+                {% else %}
+                <td class="px-5 py-2 text-red-600 font-semibold">🔴</td>
+                {% endif %}
+
+                <td class="px-5 py-2 text-gray-700">{{ log['data_logs' ]}} | {{ log['hora_evento'] }}</td>
+                <td class="px-5 py-2 text-gray-600">{{ log['nome'] }}</td>
+                {% if log['status_pagamento'] == 'paid' %}
+                <td class="px-5 py-2 text-green-600 font-semibold">{{ log['status_pagamento'] }}</td>
+                {% elif log['status_pagamento'] == 'waiting_payment' %}
+                <td class="px-5 py-2 text-orange-600 font-semibold">{{ log['status_pagamento'] }}</td>
+                {% else %}
+                <td class="px-5 py-2 text-red-600 font-semibold">{{ log['status_pagamento'] }}</td>
+                {% endif %}
+            </tr>
             {% endfor %}
-        </ul>
+        </table>
 
     </div>
 </body>
