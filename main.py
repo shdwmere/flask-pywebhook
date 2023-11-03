@@ -34,8 +34,9 @@ def webhook_listener():
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     data_brasilia = datetime.now(fuso_horario_brasilia)
-    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d %H:%M:%S %Z%z')
+    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
     momento_evento = data_brasilia_formatada
+
 
     # passando dados para o template de logs.
     logs.append({
