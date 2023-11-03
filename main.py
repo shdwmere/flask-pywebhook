@@ -26,18 +26,10 @@ def webhook_listener():
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Logs handling
-    """
     nome = dados_evento.get('data', {}).get('customer', {}).get('name')
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
-    """
-
-    nome = dados_evento.get('nome')
-    cpf = dados_evento.get('cpf')
-    email = dados_evento.get('email')
-    status_pagamento = dados_evento.get('status')
-
 
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
