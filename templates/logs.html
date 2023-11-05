@@ -11,11 +11,25 @@
 
         <h1 class="font-semibold text-2xl mb-3">Eventos Capturados</h1>
 
-        <form method="GET" action="{{ url_for('filtro_data') }}" class="mb-4 items-left">
-            <label for="data_filtrada" class="block font-bold text-white text-lg">Filtrar por data:</label>
-            <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border border-gray-300 rounded">
-            <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
-        </form>
+        <div class="flex flex-col gap-3 pb-8">
+            <form method="GET" action="{{ url_for('filtro_data') }}">
+                <label for="data_filtrada" class="block text-sm text-black text-lg">Filtrar por data:</label>
+                <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border border-gray-300 rounded">
+                <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
+            </form>
+    
+            <form method="GET" action="{{ url_for('filtro_status') }}">
+                <label for="status_filtrado" class="block text-sm text-black text-lg">Filtrar por status:</label>
+                <select id="status_filtrado" name="status_filtrado" class="px-2 py-1 border border-gray-300 rounded">
+                    <option value="paid">Pagos</option>
+                    <option value="waiting_payment">Pendentes</option>
+                    <option value="refused">Recusados</option>
+                </select>
+                <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
+            </form> 
+        </div>
+
+       
         
 
         <table class="bg-gray-100 text-center rounded-xl shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
@@ -26,14 +40,14 @@
             </tr>
             {% for log in logs %}
             <tr>
-                <td class="px-5 py-2 text-gray-700">{{ log['data_logs' ]}} | {{ log['hora_evento'] }}</td>
-                <td class="px-5 py-2 text-gray-600">{{ log['nome'] }}</td>
+                <td class="px-5 text-sm py-2 text-gray-700">{{ log['data_logs' ]}}<br/>{{ log['hora_evento'] }}</td>
+                <td class="px-5 text-sm py-2 text-gray-600">{{ log['nome'] }}</td>
                 {% if log['status_pagamento'] == 'paid' %}
-                <td class="px-5 py-2 text-green-600 font-semibold">{{ log['status_pagamento'] }} 🟢</td>
+                <td class="px-5 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
                 {% elif log['status_pagamento'] == 'waiting_payment' %}
-                <td class="px-5 py-2 text-orange-600 font-semibold">{{ log['status_pagamento'] }} 🟠</td>
+                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">Waiting</p></td>
                 {% else %}
-                <td class="px-5 py-2 text-red-600 font-semibold">{{ log['status_pagamento'] }} 🔴</td>
+                <td class="px-5 text-sm py-2"><p class="text-red-500 font-semibold p-1 rounded-xl bg-red-200">Refused</p></td>
                 {% endif %}
             </tr>
             {% endfor %}

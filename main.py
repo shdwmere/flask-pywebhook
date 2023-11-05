@@ -175,6 +175,20 @@ def filtro_data():
     return render_template('logs.html', logs=logs_filtrados)
 
 
+# Rota para filtrar por ocorrência de status.
+@app.route('/filtro_status', methods=['GET'])
+def filtro_status():
+    status_selecionado = request.args.get('status_filtrado')
+
+    logs_filtrados = [log for log in logs if log['status_pagamento'] == status_selecionado]
+    logs_nao_filtrados = [log for log in logs if log['status_pagamento'] != status_selecionado]
+
+    logs_ordenados = logs_filtrados + logs_nao_filtrados
+
+    return render_template('logs.html', logs=logs_ordenados)
+
+
+
 # rodando server em qualquer interface
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
