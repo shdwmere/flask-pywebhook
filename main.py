@@ -22,9 +22,6 @@ def webhook_listener():
 
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
-    print(f'{\n}')
-    print(dados_evento)
-    print(f'{\n}')
     
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -97,6 +94,7 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
     elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
+        print(dados_evento)
     else:
         print("Pagamento recusado.")
     # End API Logic Handle
