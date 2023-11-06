@@ -13,13 +13,13 @@
 
         <div class="flex flex-col gap-3 pb-8">
             <form method="GET" action="{{ url_for('filtro_data') }}">
-                <label for="data_filtrada" class="block text-sm text-black text-lg">Filtrar por data:</label>
+                <label for="data_filtrada" class="block text-gray-500 text-black text-lg">Filtrar por data:</label>
                 <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border border-gray-300 rounded">
                 <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
             </form>
     
             <form method="GET" action="{{ url_for('filtro_status') }}">
-                <label for="status_filtrado" class="block text-sm text-black text-lg">Filtrar por status:</label>
+                <label for="status_filtrado" class="block text-gray-500 text-black text-lg">Filtrar por status:</label>
                 <select id="status_filtrado" name="status_filtrado" class="px-2 py-1 border border-gray-300 rounded">
                     <option value="paid">Pagos</option>
                     <option value="waiting_payment">Pendentes</option>
@@ -30,7 +30,7 @@
         </div>
 
        <div class="my-7">
-            <h3>Total em vendas: {{ total_vendas }}</h3>
+            <h3 class="text-gray-500 text-xl">Total em vendas: <span class="text-green-500 font-semibold">R$ {{ total_vendas }}</span> </h3>
        </div>
         
 
