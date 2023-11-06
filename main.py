@@ -27,6 +27,7 @@ def webhook_listener():
 
     # Logs handling
     nome = dados_evento.get('data', {}).get('customer', {}).get('name')
+    nome_split = nome.split()[0]
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
@@ -48,7 +49,7 @@ def webhook_listener():
     logs.append({
         'data_logs': data_logs,
         'hora_evento': hora_evento,
-        'nome': nome,
+        'nome': nome_split,
         # 'cpf': cpf,
         # 'email': email,
         'status_pagamento': status_pagamento,
@@ -98,8 +99,8 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
     elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
-        print(dados_evento)
-        print(preco_formatado)
+        #print(dados_evento)
+        #print(preco_formatado)
     else:
         print("Pagamento recusado.")
     # End API Logic Handle
@@ -151,10 +152,6 @@ def webhook_listener():
     # Responder requisicoes com status code OK
     return '', 200
 
-# Captura de logs
-@app.route('/logs')
-def show_logs():
-    return render_template('logs.html', logs=logs, current_time=datetime.now())
 
 
 def filtrar_logs_por_data(logs, data):
@@ -192,6 +189,22 @@ def filtro_status():
     logs_ordenados = logs_filtrados + logs_nao_filtrados
 
     return render_template('logs.html', logs=logs_ordenados)
+
+# Função para calcular o total das vendas com status 'paid'
+def calcular_total_vendas():
+    total = 0
+    for log in logs:
+        if log['status_pagamento'] == 'paid':
+            preco = float(log['preco'].replace(',', '.'))  # convertendo o preço formatado (ex: "139.90") para float
+            total += preco
+    return "{:.2f}".format(total)  # formatando o total como uma string de valor monetário (ex: "139.90")
+
+
+# Captura de logs
+@app.route('/logs')
+def show_logs():
+    total_vendas = calcular_total_vendas()
+    return render_template('logs.html', logs=logs, current_time=datetime.now(), total_vendas=total_vendas)
 
 
 
