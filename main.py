@@ -30,6 +30,8 @@ def webhook_listener():
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
+    preco = dados_evento.get('data', {}).get('items', {}).get('unitPrice')
+    
 
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
@@ -48,7 +50,8 @@ def webhook_listener():
         'nome': nome,
         # 'cpf': cpf,
         # 'email': email,
-        'status_pagamento': status_pagamento
+        'status_pagamento': status_pagamento,
+        'preco': preco
     })
     # End Logs handling
 
@@ -94,7 +97,8 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
     elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
-        print(dados_evento)
+        # print(dados_evento)
+        print(preco)
     else:
         print("Pagamento recusado.")
     # End API Logic Handle
