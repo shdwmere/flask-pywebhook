@@ -22,7 +22,10 @@ def webhook_listener():
 
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
-
+    print(f'{\n}')
+    print(dados_evento)
+    print(f'{\n}')
+    
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Logs handling
