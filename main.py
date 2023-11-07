@@ -152,17 +152,25 @@ def webhook_listener():
     return '', 200
 
 
+def obter_data_atual_brasilia():
+    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_brasilia = datetime.now(fuso_horario_brasilia)
+    return data_brasilia
+
 
 def filtrar_logs_por_data(logs, data):
     logs_filtrados = []
 
-    # Convertendo a string da data filtrada para o formato datetime
-    data_filtrada = datetime.strptime(data, '%Y-%m-%d')
+    if data:  # Verifica se há alguma data selecionada
+        data_filtrada = datetime.strptime(data, '%Y-%m-%d')
+    else:
+        # Se nenhum valor for selecionado, usa a data atual de Brasília
+        data_filtrada = obter_data_atual_brasilia().date()
 
     for log in logs:
-        data_logs = datetime.strptime(log['data_logs'], '%d/%m/%Y')
+        data_logs = datetime.strptime(log['data_logs'], '%d/%m/%Y').date()
         
-        if data_logs.date() == data_filtrada.date():
+        if data_logs == data_filtrada:
             logs_filtrados.append(log)
     
     return logs_filtrados
