@@ -2,21 +2,16 @@ from flask import Flask, render_template, request
 import requests
 from datetime import datetime
 import random, json
-import pytz
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from logs import logs, calcular_total_vendas, filtrar_logs_por_data
+from essential_vars import data_logs, hora_evento, momento_evento
+from email_service import send_mail_if_paid
 
 app = Flask(__name__)
 
-logs = []
-
-# Rota index
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Rota para receber eventos do gateway de pagamento
 @app.route('/webhook', methods=['POST'])
 def webhook_listener():
 
@@ -25,7 +20,7 @@ def webhook_listener():
     
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Logs handling
+    # data scraping
     nome = dados_evento.get('data', {}).get('customer', {}).get('name')
     nome_split = nome.split()[0]
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
@@ -33,29 +28,16 @@ def webhook_listener():
     status_pagamento = dados_evento.get('data', {}).get('status')
     preco_total = dados_evento.get('data', {}).get('amount')
     preco_formatado = "{:.2f}".format(float(preco_total) / 100)
-    
 
-    # Obtendo o fuso horário de Brasília
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_brasilia = datetime.now(fuso_horario_brasilia)
-    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
-    hora_evento = data_brasilia.strftime('%H:%M:%S')
-    momento_evento = data_brasilia_formatada
 
-    # para os logs
-    data_logs = data_brasilia.strftime('%d/%m/%Y')
-
-    # passando dados para o template de logs.
+    # log handling
     logs.append({
         'data_logs': data_logs,
         'hora_evento': hora_evento,
         'nome': nome_split,
-        # 'cpf': cpf,
-        # 'email': email,
         'status_pagamento': status_pagamento,
         'preco': preco_formatado
     })
-    # End Logs handling
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -83,6 +65,7 @@ def webhook_listener():
     # definindo Header da requisicao
     headers = {"Content-Type": "application/json"}
 
+    # handling purcharses logic
     if status_pagamento == 'paid':
         try:
             resultado = requests.post(url=uri, data=corpo_json, headers=headers)
@@ -91,6 +74,7 @@ def webhook_listener():
             resposta = resultado.json()
             print('Pagamento identificado com sucesso!')
             print(f"\033[1;32m Dados enviados com sucesso: \033[0;36m{resposta}\033[0m \033[0m")
+            send_mail_if_paid(email=email, nome=nome, id_gerado=id_gerado)
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
@@ -106,77 +90,10 @@ def webhook_listener():
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Mailing Handle
-        
-    # Mail Config
-    host_smtp = 'smtp.hostinger.com'
-    remetente = 'contato@lojashopee.shop'
-    password = 'o0cbDdFeComm@777'
-
-    destinatario = email
-    assunto = 'Recebemos o seu pedido'
-    mensagem_html = f'<html><body><h1>Pedido confirmado!</h1> <p>Prezado {nome}, recebemos o seu pedido <b>ID: {id_gerado}</b>.</p> <p>Pedimos para que aguarde o prazo de 72h que enviaremos o código de rastreio de sua encomenda.</p> <p>Agradecemos a preferência, Equipe Shopee.</p></body></html>'
-
-
-    if status_pagamento == 'paid':
-        try:
-            print(f"\033[0;35m Conectando ao servidor SMTP: '{host_smtp}'... \033[0m")
-            server = smtplib.SMTP_SSL(host_smtp, port=465)
-
-            print(f"\033[0;35m Logando no e-mail: '{remetente}'... \033[0m")
-            server.login(remetente, password)
-
-            print(f"\033[0;33m Criando mensagem HTML... \033[0m")
-            msg = MIMEMultipart()
-            msg['From'] = remetente
-            msg['To'] = destinatario
-            msg['Subject'] = assunto
-            msg.attach(MIMEText(mensagem_html, 'html'))
-
-            print(f"\033[0;36m Enviando o e-mail... \033[0m")
-            server.sendmail(remetente, destinatario, msg.as_string())
-
-
-            print(f'\033[1;32m E-mail enviado com sucesso. \033[0m')
-            server.quit()
-        except smtplib.SMTPException as e:
-            print(f'\033[1;31m Falha ao enviar o e-mail: {str(e)} \033[0m')
-        except Exception as e:
-            print(f'Erro inesperado: {str(e)}')
-    else:
-        print('Sem pagamento, sem notificação.')
-    
-    # End Mailing Handle
-
     # Responder requisicoes com status code OK
     return '', 200
 
 
-def obter_data_atual_brasilia():
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_brasilia = datetime.now(fuso_horario_brasilia)
-    return data_brasilia
-
-
-def filtrar_logs_por_data(logs, data):
-    logs_filtrados = []
-
-    if data:  # Verifica se há alguma data selecionada
-        data_filtrada = datetime.strptime(data, '%Y-%m-%d')
-    else:
-        # Se nenhum valor for selecionado, usa a data atual de Brasília
-        data_filtrada = obter_data_atual_brasilia().date()
-
-    for log in logs:
-        data_logs = datetime.strptime(log['data_logs'], '%d/%m/%Y').date()
-        
-        if data_logs == data_filtrada:
-            logs_filtrados.append(log)
-    
-    return logs_filtrados
-
-
-# Rota para filtrar os logs por data
 @app.route('/filtro_data', methods=['GET'])
 def filtro_data():
     data_selecionada = request.args.get('data_filtrada')
@@ -188,7 +105,6 @@ def filtro_data():
     return render_template('logs.html', logs=logs_filtrados, total_vendas=total_vendas)
 
 
-# Rota para filtrar por ocorrência de status.
 @app.route('/filtro_status', methods=['GET'])
 def filtro_status():
     status_selecionado = request.args.get('status_filtrado')
@@ -201,24 +117,12 @@ def filtro_status():
 
     return render_template('logs.html', logs=logs_ordenados, total_vendas=total_vendas)
 
-# Função para calcular o total das vendas com status 'paid'
-def calcular_total_vendas(logs):
-    total = 0
-    for log in logs:
-        if log['status_pagamento'] == 'paid':
-            preco = float(log['preco'].replace(',', '.'))  # convertendo o preço formatado (ex: "139.90") para float
-            total += preco
-    return "{:.2f}".format(total)  # formatando o total como uma string de valor monetário (ex: "139.90")
 
-
-# Captura de logs
 @app.route('/logs')
 def show_logs():
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, current_time=datetime.now(), total_vendas=total_vendas)
 
-
-
-# rodando server em qualquer interface
+# execution
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
