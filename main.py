@@ -182,7 +182,10 @@ def filtro_data():
     data_selecionada = request.args.get('data_filtrada')
     # Lógica para filtrar os registros de log pela data selecionada
     logs_filtrados = filtrar_logs_por_data(logs, data_selecionada)
-    return render_template('logs.html', logs=logs_filtrados)
+
+    total_vendas = calcular_total_vendas(logs=logs_filtrados)
+
+    return render_template('logs.html', logs=logs_filtrados, total_vendas=total_vendas)
 
 
 # Rota para filtrar por ocorrência de status.
@@ -192,13 +195,14 @@ def filtro_status():
 
     logs_filtrados = [log for log in logs if log['status_pagamento'] == status_selecionado]
     logs_nao_filtrados = [log for log in logs if log['status_pagamento'] != status_selecionado]
-
     logs_ordenados = logs_filtrados + logs_nao_filtrados
 
-    return render_template('logs.html', logs=logs_ordenados)
+    total_vendas = calcular_total_vendas(logs=logs_filtrados)
+
+    return render_template('logs.html', logs=logs_ordenados, total_vendas=total_vendas)
 
 # Função para calcular o total das vendas com status 'paid'
-def calcular_total_vendas():
+def calcular_total_vendas(logs):
     total = 0
     for log in logs:
         if log['status_pagamento'] == 'paid':
@@ -210,7 +214,7 @@ def calcular_total_vendas():
 # Captura de logs
 @app.route('/logs')
 def show_logs():
-    total_vendas = calcular_total_vendas()
+    total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, current_time=datetime.now(), total_vendas=total_vendas)
 
 

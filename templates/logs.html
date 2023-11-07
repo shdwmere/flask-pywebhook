@@ -30,16 +30,16 @@
         </div>
 
        <div class="my-7">
-            <h3 class="text-gray-500 text-xl">Total em vendas: <span class="text-green-500 font-semibold">R$ {{ total_vendas }}</span> </h3>
+            <h3 class="text-gray-500 text-xl">Total em vendas: <span class="text-green-500 font-bold">R$ {{ total_vendas }}</span> </h3>
        </div>
         
 
-        <table class="bg-gray-100 text-center rounded-xl shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
+        <table class="bg-gray-100 text-center shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
             <tr>
-                <th class="px-5 py-2 text-gray-700 font-semibold">D&H</th>
-                <th class="px-5 py-2 text-gray-700 font-semibold">Preco</th>
-                <th class="px-5 py-2 text-gray-700 font-semibold">Nome</th>
-                <th class="px-5 py-2 text-gray-700 font-semibold">Status</th>
+                <th class="px-5 py-2 text-gray-700 font-bold">D&H</th>
+                <th class="px-5 py-2 text-gray-700 font-bold">Preco</th>
+                <th class="px-5 py-2 text-gray-700 font-bold">Nome</th>
+                <th class="px-5 py-2 text-gray-700 font-bold">Status</th>
             </tr>
             {% for log in logs %}
             <tr>
@@ -55,8 +55,8 @@
                 {% endif %}
             </tr>
             {% endfor %}
-        </table>
-
+        </table>      
+        
     </div>
 </body>
 </html>
