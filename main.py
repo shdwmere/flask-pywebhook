@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request
 import requests
+import pytz
 from datetime import datetime
 import random, json
-from logs import logs, calcular_total_vendas, filtrar_logs_por_data
-from essential_vars import data_logs, hora_evento, momento_evento
-from email_service import send_mail_if_paid
+from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
+from modules.essential_vars import data_logs, hora_evento, momento_evento
+from modules.email_service import send_mail_if_paid
 
 app = Flask(__name__)
 
@@ -120,8 +121,17 @@ def filtro_status():
 
 @app.route('/logs')
 def show_logs():
+    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_atual = datetime.now(fuso_horario_brasilia).strftime('%d/%m/%Y')
+
+    # Verifica se a data dos logs é diferente da data atual em Brasília
+    if logs:
+        data_ultimos_logs = logs[-1]['data_logs']
+        if data_ultimos_logs != data_atual:
+            logs[:] = [log for log in logs if log['data_logs'] == data_atual]
+
     total_vendas = calcular_total_vendas(logs)
-    return render_template('logs.html', logs=logs, current_time=datetime.now(), total_vendas=total_vendas)
+    return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
 # execution
 if __name__ == '__main__':
