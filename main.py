@@ -31,8 +31,8 @@ def webhook_listener():
     cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
     email = dados_evento.get('data', {}).get('customer', {}).get('email')
     status_pagamento = dados_evento.get('data', {}).get('status')
-    primeiro_preco = dados_evento.get('data', {}).get('items', [{}])[0].get('unitPrice', 0)
-    preco_formatado = "{:.2f}".format(float(primeiro_preco) / 100)
+    preco_total = dados_evento.get('data', {}).get('amount')
+    preco_formatado = "{:.2f}".format(float(preco_total) / 100)
     
 
     # Obtendo o fuso horário de Brasília
@@ -99,8 +99,7 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
     elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
-        print(dados_evento)
-        #print(preco_formatado)
+        #print(dados_evento)
     else:
         print("Pagamento recusado.")
     # End API Logic Handle
