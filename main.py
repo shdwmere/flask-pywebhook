@@ -99,7 +99,7 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
     elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
-        #print(dados_evento)
+        print(dados_evento)
         #print(preco_formatado)
     else:
         print("Pagamento recusado.")
