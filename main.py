@@ -4,7 +4,6 @@ import pytz
 from datetime import datetime
 import random, json
 from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
-from modules.essential_vars import data_logs, hora_evento, momento_evento
 from modules.email_service import send_mail_if_paid
 
 app = Flask(__name__)
@@ -29,7 +28,16 @@ def webhook_listener():
     status_pagamento = dados_evento.get('data', {}).get('status')
     preco_total = dados_evento.get('data', {}).get('amount')
     preco_formatado = "{:.2f}".format(float(preco_total) / 100)
-
+    
+    # Obtendo o fuso horário de Brasília
+    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_brasilia = datetime.now(fuso_horario_brasilia)
+    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
+    
+    # importante
+    momento_evento = data_brasilia_formatada
+    hora_evento = data_brasilia.strftime('%H:%M:%S')
+    data_logs = data_brasilia.strftime('%d/%m/%Y')
 
     # log handling
     logs.append({
