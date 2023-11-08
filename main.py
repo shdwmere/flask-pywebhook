@@ -129,15 +129,6 @@ def filtro_status():
 
 @app.route('/logs')
 def show_logs():
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_atual = datetime.now(fuso_horario_brasilia).strftime('%d/%m/%Y')
-
-    # Verifica se a data dos logs é diferente da data atual em Brasília
-    if logs:
-        data_ultimos_logs = logs[-1]['data_logs']
-        if data_ultimos_logs != data_atual:
-            logs[:] = [log for log in logs if log['data_logs'] == data_atual]
-
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
