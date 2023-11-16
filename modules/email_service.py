@@ -11,7 +11,7 @@ def send_mail_if_paid(email, nome, id_gerado):
 
     destinatario = email
     assunto = 'Recebemos o seu pedido'
-    mensagem_html = f'<html><body><h1>Pedido confirmado!</h1> <p>Prezado {nome}, recebemos o seu pedido <b>ID: {id_gerado}</b>.</p> <p>Pedimos para que aguarde o prazo de 72h que enviaremos o código de rastreio de sua encomenda.</p> <p>Agradecemos a preferência, Equipe Shopee.</p></body></html>'
+    mensagem_html = f'<html><body><h1>Pedido confirmado!</h1> <p>Prezado {nome}, recebemos o seu pedido <b>ID: {id_gerado}</b>.</p> <p>Pedimos para que aguarde o prazo de 72h que enviaremos o código de rastreio de sua encomenda.</p> <p>Agradecemos a preferência, Equipe Mercado Livre.</p></body></html>'
 
     try:
         print(f"\033[0;35m Conectando ao servidor SMTP: '{host_smtp}'... \033[0m")
