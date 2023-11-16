@@ -3,9 +3,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 def send_mail_if_paid(email, nome, id_gerado):    
+    
     # Mail Config
     host_smtp = 'smtp.hostinger.com'
-    remetente = 'contato@lojashopee.shop'
+    remetente = 'contato@liquidalivreblackfriday.shop'
     password = 'o0cbDdFeComm@777'
 
     destinatario = email
