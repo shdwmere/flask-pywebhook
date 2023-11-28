@@ -20,7 +20,7 @@ def webhook_listener():
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
 
-    status_pagamento = dados_evento.get('status', 'Status não encontrado')
+    status_pagamento = dados_evento.get('status')
 
     print("\n")
     print(f"{Fore.GREEN}Evento recebido:")
