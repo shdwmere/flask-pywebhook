@@ -48,8 +48,8 @@
                 <td class="px-5 text-sm py-2 text-gray-600">{{ log['nome'] }}</td>
                 {% if log['status_pagamento'] == 'paid' %}
                 <td class="px-5 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
-                {% elif log['status_pagamento'] == 'waiting_payment' %}
-                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">Waiting</p></td>
+                {% elif log['status_pagamento'] == 'pending' %}
+                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">Pending</p></td>
                 {% else %}
                 <td class="px-5 text-sm py-2"><p class="text-red-500 font-semibold p-1 rounded-xl bg-red-200">Refused</p></td>
                 {% endif %}
