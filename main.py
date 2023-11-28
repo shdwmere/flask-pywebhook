@@ -5,8 +5,10 @@ from datetime import datetime
 import random, json
 from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
 from modules.email_service import send_mail_if_paid
+from colorama import init, Fore
 
 app = Flask(__name__)
+init(autoreset=True)
 
 @app.route('/')
 def index():
@@ -17,7 +19,14 @@ def webhook_listener():
 
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
-    
+
+    print("\n")
+    print(f"{Fore.GREEN}Evento recebido:")
+    print(f"{Fore.YELLOW}{dados_evento}")
+    print("\n")
+
+    return 'Evento recebido com sucesso.'
+"""
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # data scraping
@@ -132,6 +141,7 @@ def show_logs():
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
+"""
 # execution
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
