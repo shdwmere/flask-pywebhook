@@ -6,7 +6,7 @@ def send_mail_if_paid(email, nome, id_gerado):
     
     # Mail Config
     host_smtp = 'smtp.hostinger.com'
-    remetente = 'Contato@mercadopagamento.shop'
+    remetente = 'contato@mercadopagamento.com'
     password = 'JmHfC#!cS;1'
 
     destinatario = email
