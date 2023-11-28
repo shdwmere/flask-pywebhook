@@ -6,8 +6,8 @@ def send_mail_if_paid(email, nome, id_gerado):
     
     # Mail Config
     host_smtp = 'smtp.hostinger.com'
-    remetente = 'contato@liquidalivreblackfriday.shop'
-    password = 'o0cbDdFeComm@777'
+    remetente = 'Contato@mercadopagamento.shop'
+    password = 'JmHfC#!cS;1'
 
     destinatario = email
     assunto = 'Recebemos o seu pedido'

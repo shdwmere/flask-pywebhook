@@ -1,0 +1,68 @@
+nesse gateway recebemos 3 eventos quando processamos uma compra:
+
+Evento recebido:
+=-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-=
+
+{
+    'transaction_id': 'w3R9nLKg', 
+    'status': 'in_proccess', 
+    'updated_at': '2023-11-28 17:30:14', 
+    'paymentMethod': 'pix', 
+    'value': '161.91'
+}
+
+Evento recebido:
+=-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-=
+{
+    "transaction_id": "w3R9nLKg",
+    "store_name": "Seguro Brasil",
+    "method": "pix",
+    "total_price": "161.91",
+    "status": "pending",
+    "created_at": "2023-11-28 17:30:14",
+    "customer": {
+        "name": "Maria Lima",
+        "document": "74126859020",
+        "email": "marialima211@gmail.com",
+        "phone": "11982928192"
+    },
+    "address": {
+        "street": "",
+        "number": "2222",
+        "district": "Jardim União",
+        "zip_code": "68502800",
+        "city": "Marabá",
+        "state": "PA",
+        "country": "BR"
+    },
+    "plans": [
+        {
+            "id": "nOzxZon2ev3J07o",
+            "name": "Kit 12 Panelas Monaco Red Tramontina + Brinde",
+            "description": "",
+            "amount": "1",
+            "value": "179.90",
+            "created_at": "2023-11-26 22:42:12",
+            "products": [
+                {
+                    "id": "BNjzgPREWeZM78R",
+                    "name": "Kit 12 Panelas Monaco Red Tramontina + Brinde",
+                    "description": "",
+                    "amount": 1,
+                    "photo": "https://cdn.shopify.com/s/files/1/0637/4939/0522/files/kitpanelas.webp?v=1701046080",
+                    "created_at": "2023-11-26 22:42:12"
+                }
+            ]
+        }
+    ]
+}
+
+Evento recebido:
+=-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-==-=-=
+{
+    'transaction_id': 'w3R9nLKg', 
+'status': 'pending', 
+'updated_at': '2023-11-28 17:30:18', 
+'paymentMethod': 'pix', 
+'value': '161.91'
+}

@@ -20,23 +20,22 @@ def webhook_listener():
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
 
+    status_pagamento = dados_evento.get('status', 'Status não encontrado')
+
     print("\n")
     print(f"{Fore.GREEN}Evento recebido:")
     print(f"{Fore.YELLOW}{dados_evento}")
     print("\n")
-
-    return 'Evento recebido com sucesso.'
-"""
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # data scraping
-    nome = dados_evento.get('data', {}).get('customer', {}).get('name')
+    nome = dados_evento.get('customer', {}).get('name', 'Nome não encontrado')
     nome_split = nome.split()[0]
-    cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number')
-    email = dados_evento.get('data', {}).get('customer', {}).get('email')
-    status_pagamento = dados_evento.get('data', {}).get('status')
-    preco_total = dados_evento.get('data', {}).get('amount')
-    preco_formatado = "{:.2f}".format(float(preco_total) / 100)
+    cpf = dados_evento.get('customer', {}).get('document', 'CPF não encontrado')
+    email = dados_evento.get('customer', {}).get('email', 'Email não encontrado')
+    status_pagamento = dados_evento.get('status', 'Status não encontrado')
+    preco_total = dados_evento.get('total_price', 'Preço total não encontrado')
+    preco_formatado = "{:.2f}".format(float(preco_total))
     
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
@@ -99,7 +98,7 @@ def webhook_listener():
             print(f"Erro ao analisar a resposta JSON: {e}")
         except Exception as e:
             print(f"Erro inesperado: {e}")
-    elif status_pagamento == 'waiting_payment':
+    elif status_pagamento == 'pending':
         print("Pagamento pendente.")
         #print(dados_evento)
     else:
@@ -141,7 +140,7 @@ def show_logs():
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
-"""
+
 # execution
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
