@@ -29,13 +29,13 @@ def webhook_listener():
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # data scraping
-    nome = dados_evento.get('customer', {}).get('name', 'Nome não encontrado')
+    nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
     nome_split = nome.split()[0]
-    cpf = dados_evento.get('customer', {}).get('document', 'CPF não encontrado')
-    email = dados_evento.get('customer', {}).get('email', 'Email não encontrado')
-    status_pagamento = dados_evento.get('status', 'Status não encontrado')
-    preco_total = dados_evento.get('total_price', 'Preço total não encontrado')
-    preco_formatado = "{:.2f}".format(float(preco_total))
+    cpf = dados_evento.get('data', {}).get('customer', {}).get('document', {}).get('number', 'CPF não encontrado')
+    email = dados_evento.get('data', {}).get('customer', {}).get('email', 'Email não encontrado')
+    status_pagamento = dados_evento.get('data', {}).get('status', 'Status não encontrado')
+    preco_total = dados_evento.get('data', {}).get('amount', 'Preço total não encontrado')  # Considerando 'amount' como o total a ser pago
+    preco_formatado = "{:.2f}".format(float(preco_total) / 100)  # Convertendo centavos para reais
     
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
