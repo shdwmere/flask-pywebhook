@@ -90,7 +90,7 @@ def webhook_listener():
 
             resposta = resultado.json()
             print('Pagamento identificado com sucesso!')
-            print(f"\033[1;32m Dados enviados com sucesso: \033[0;36m{resposta}\033[0m \033[0m")
+            print(f"\033[1;32m Dados salvos com sucesso no DB Djamba: \033[0;36m{resposta}\033[0m \033[0m")
             send_mail_if_paid(email=email, nome=nome, id_gerado=id_gerado)
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
@@ -98,7 +98,7 @@ def webhook_listener():
             print(f"Erro ao analisar a resposta JSON: {e}")
         except Exception as e:
             print(f"Erro inesperado: {e}")
-    elif status_pagamento == 'pending':
+    elif status_pagamento == 'waiting_payment':
         print("Pagamento pendente.")
         #print(dados_evento)
     else:

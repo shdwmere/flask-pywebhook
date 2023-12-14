@@ -22,7 +22,7 @@
                 <label for="status_filtrado" class="block text-gray-500 text-black text-lg">Filtrar por status:</label>
                 <select id="status_filtrado" name="status_filtrado" class="px-2 py-1 border border-gray-300 rounded">
                     <option value="paid">Pagos</option>
-                    <option value="pending">Pendentes</option>
+                    <option value="waiting_payment">Pendentes</option>
                     <option value="refused">Recusados</option>
                 </select>
                 <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
@@ -48,8 +48,8 @@
                 <td class="px-5 text-sm py-2 text-gray-600">{{ log['nome'] }}</td>
                 {% if log['status_pagamento'] == 'paid' %}
                 <td class="px-5 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
-                {% elif log['status_pagamento'] == 'pending' %}
-                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">Pending</p></td>
+                {% elif log['status_pagamento'] == 'waiting_payment' %}
+                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">pendente</p></td>
                 {% else %}
                 <td class="px-5 text-sm py-2"><p class="text-red-500 font-semibold p-1 rounded-xl bg-red-200">Refused</p></td>
                 {% endif %}
