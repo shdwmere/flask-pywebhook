@@ -26,10 +26,13 @@ def webhook_listener():
 
     status_pagamento = dados_evento.get('status')
 
-    print("\n")
-    print(f"{Fore.GREEN}Evento recebido:")
-    print(f"{Fore.YELLOW}{dados_evento}")
-    print("\n")
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # print("\n")
+    # print(f"{Fore.GREEN}Evento recebido:")
+    # print(f"{Fore.YELLOW}{dados_evento}")
+    # print("\n")
+
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # data scraping
@@ -42,7 +45,19 @@ def webhook_listener():
     preco_formatado = "{:.2f}".format(float(preco_total) / 100)  # Convertendo centavos para reais
     pix_code = dados_evento.get('data', {}).get('pix', {}).get('qrcode', 'Código PIX não encontrado')
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
-    
+
+    def imprimir_dados_evento():
+        print('\n')
+        print(f'{Fore.YELLOW}=-' * 20)
+        print(f'{Fore.YELLOW}[{data_logs} - {hora_evento}]')
+
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Nome do cliente: {Fore.YELLOW}{nome_split}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Preco do produto: {Fore.YELLOW}{preco_formatado}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Método de pagamento: {Fore.YELLOW}{payment_method}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Status do pagamento: {Fore.YELLOW}{status_pagamento}')
+        print(f'{Fore.YELLOW}=-' * 20)
+        print('\n')
+        
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     data_brasilia = datetime.now(fuso_horario_brasilia)
@@ -93,11 +108,13 @@ def webhook_listener():
         try:
             resultado = requests.post(url=uri, data=corpo_json, headers=headers)
             resultado.raise_for_status()  # Lança uma exceção se o status da resposta não for 2xx
+            resposta = resultado.json() # Converte a resposta em JSON
 
-            resposta = resultado.json()
+            imprimir_dados_evento()
             print(f'{Fore.GREEN}[+] Pagamento aprovado!')
-            print(f"\033[1;32m Dados salvos com sucesso no DB Djamba: \033[0;36m{resposta}\033[0m \033[0m")
+            print(f'{Fore.GREEN}[+] Pedido registrado com sucesso!')
             email_confirmar_pagamento(email=email, nome=nome, id_gerado=id_gerado)
+
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
@@ -107,6 +124,7 @@ def webhook_listener():
 
     elif status_pagamento == 'waiting_payment':
         print(f"{Fore.YELLOW}• Pagamento pendente.")
+        imprimir_dados_evento()
 
         # checa se o pagamento é via PIX e dispara um e-mail de notificação com o código
         if payment_method == 'pix':
@@ -114,6 +132,7 @@ def webhook_listener():
             email_notificar_pix(email=email, nome=nome, nome_loja=nome_loja, pix_code=pix_code)
 
     else:
+        imprimir_dados_evento()
         print("Pagamento recusado.")
     # End API Logic Handle
 
@@ -151,6 +170,7 @@ def filtro_status():
 def show_logs():
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
+
 
 
 # execution
