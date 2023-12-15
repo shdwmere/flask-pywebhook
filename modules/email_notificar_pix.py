@@ -1,26 +1,31 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from decouple import config
 
-def send_mail_if_paid(email, nome, id_gerado):    
+def email_notificar_pix(email, nome, nome_loja, pix_code):    
     
     # Mail Config
     host_smtp = 'smtp.hostinger.com'
-    remetente = 'contato@mercadopagamento.com'
-    password = 'JmHfC#!cS;1'
+    remetente = config('HOST_MAIL')
+    password = config('PASSPHRASE')
+
+    with open('pix.html', 'r') as file:
+        html_template = file.read()
 
     destinatario = email
-    assunto = 'Recebemos o seu pedido'
-    mensagem_html = f'<html><body><h1>Pedido confirmado!</h1> <p>Prezado {nome}, recebemos o seu pedido <b>ID: {id_gerado}</b>.</p> <p>Pedimos para que aguarde o prazo de 72h que enviaremos o código de rastreio de sua encomenda.</p> <p>Agradecemos a preferência, Equipe Mercado Livre.</p></body></html>'
-
+    assunto = f'{nome_loja} - Pague seu produto com PIX!'
+    mensagem_html = html_template.format(nome=nome, pix_code=pix_code, nome_loja=nome_loja)
+    
     try:
+        print(f"\033[1;32m \n[+] Módulo de Notificação PIX carregando...\n\033[0m")
         print(f"\033[0;35m Conectando ao servidor SMTP: '{host_smtp}'... \033[0m")
         server = smtplib.SMTP_SSL(host_smtp, port=465)
 
         print(f"\033[0;35m Logando no e-mail: '{remetente}'... \033[0m")
         server.login(remetente, password)
 
-        print(f"\033[0;33m Criando mensagem HTML... \033[0m")
+        print(f"\033[0;33m Carregando template HTML... \033[0m")
         msg = MIMEMultipart()
         msg['From'] = remetente
         msg['To'] = destinatario

@@ -1,11 +1,15 @@
 from flask import Flask, render_template, request
 import requests
 import pytz
-from datetime import datetime
 import random, json
-from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
-from modules.email_service import send_mail_if_paid
+from datetime import datetime
 from colorama import init, Fore
+from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
+# e-mail modules
+from modules.email_confirmar_pagamento import email_confirmar_pagamento
+from modules.email_notificar_pix import email_notificar_pix
+
+nome_loja = 'Loja Shoppe'
 
 app = Flask(__name__)
 init(autoreset=True)
@@ -36,6 +40,8 @@ def webhook_listener():
     status_pagamento = dados_evento.get('data', {}).get('status', 'Status não encontrado')
     preco_total = dados_evento.get('data', {}).get('amount', 'Preço total não encontrado')  # Considerando 'amount' como o total a ser pago
     preco_formatado = "{:.2f}".format(float(preco_total) / 100)  # Convertendo centavos para reais
+    pix_code = dados_evento.get('data', {}).get('pix', {}).get('qrcode', 'Código PIX não encontrado')
+    payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
     
     # Obtendo o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
@@ -89,18 +95,24 @@ def webhook_listener():
             resultado.raise_for_status()  # Lança uma exceção se o status da resposta não for 2xx
 
             resposta = resultado.json()
-            print('Pagamento identificado com sucesso!')
+            print(f'{Fore.GREEN}[+] Pagamento aprovado!')
             print(f"\033[1;32m Dados salvos com sucesso no DB Djamba: \033[0;36m{resposta}\033[0m \033[0m")
-            send_mail_if_paid(email=email, nome=nome, id_gerado=id_gerado)
+            email_confirmar_pagamento(email=email, nome=nome, id_gerado=id_gerado)
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
             print(f"Erro ao analisar a resposta JSON: {e}")
         except Exception as e:
             print(f"Erro inesperado: {e}")
+
     elif status_pagamento == 'waiting_payment':
-        print("Pagamento pendente.")
-        #print(dados_evento)
+        print(f"{Fore.YELLOW}• Pagamento pendente.")
+
+        # checa se o pagamento é via PIX e dispara um e-mail de notificação com o código
+        if payment_method == 'pix':
+            print(f"{Fore.YELLOW}[+] Pagamento via PIX identificado.")
+            email_notificar_pix(email=email, nome=nome, nome_loja=nome_loja, pix_code=pix_code)
+
     else:
         print("Pagamento recusado.")
     # End API Logic Handle
