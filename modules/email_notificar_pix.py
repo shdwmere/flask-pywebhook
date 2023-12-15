@@ -10,7 +10,7 @@ def email_notificar_pix(email, nome, nome_loja, pix_code):
     remetente = config('HOST_MAIL')
     password = config('PASSPHRASE')
 
-    with open('pix.html', 'r') as file:
+    with open('./templates/mail/pix.html', 'r') as file:
         html_template = file.read()
 
     destinatario = email
