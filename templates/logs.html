@@ -6,21 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="flex flex-col my-12 p-5 justify-center items-center">
+<body class="bg-gray-900 text-white">
+
+
+    <div class="flex justify-center flex-col p-4 bg-gray-800">
+        <h3 class="text-green-300 text-xl">Total vendido:</h3>
+        <h1 class="text-green-500 text-2xl font-bold">R$ {{ total_vendas }}</h1> 
+   </div>
+
+    <div class="flex flex-col my-8 p-4 justify-center">
 
         <h1 class="font-semibold text-2xl mb-3">Eventos Capturados</h1>
 
-        <div class="flex flex-col gap-3 pb-8">
+        <div class="flex flex-col w-fit gap-3 pb-8">
             <form method="GET" action="{{ url_for('filtro_data') }}">
-                <label for="data_filtrada" class="block text-gray-500 text-black text-lg">Filtrar por data:</label>
-                <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border border-gray-300 rounded">
+                <label for="data_filtrada" class="block text-gray-300 text-black text-lg">Filtrar por data:</label>
+                <input type="date" id="data_filtrada" name="data_filtrada" class="px-2 py-1 border bg-gray-800 border-green-300 rounded">
                 <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
             </form>
     
-            <form method="GET" action="{{ url_for('filtro_status') }}">
-                <label for="status_filtrado" class="block text-gray-500 text-black text-lg">Filtrar por status:</label>
-                <select id="status_filtrado" name="status_filtrado" class="px-2 py-1 border border-gray-300 rounded">
+            <form method="GET" class="flex flex-col gap-2" action="{{ url_for('filtro_status') }}">
+                <label for="status_filtrado" class="block text-gray-300 text-black text-lg">Filtrar por status:</label>
+                <select id="status_filtrado" name="status_filtrado" class="px-2 py-1 border bg-gray-800 border-green-300 rounded">
                     <option value="paid">Pagos</option>
                     <option value="waiting_payment">Pendentes</option>
                     <option value="refused">Recusados</option>
@@ -28,24 +35,23 @@
                 <button type="submit" class="btn btn-primary p-2 rounded-xl bg-green-500 hover:bg-green-700 text-white font-semibold text-sm">Filtrar</button>
             </form> 
         </div>
+       
+        <span class="mb-2 p-2">
+            <p class="text-2xl text-gray-300">Histórico</p>
+        </span>
 
-       <div class="my-7">
-            <h3 class="text-gray-500 text-xl">Total em vendas: <span class="text-green-500 font-bold">R$ {{ total_vendas }}</span> </h3>
-       </div>
-        
-
-        <table class="bg-gray-100 text-center shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
+        <table class="bg-gray-800 w-fit text-center shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
             <tr>
-                <th class="px-5 py-2 text-gray-700 font-bold">D&H</th>
-                <th class="px-5 py-2 text-gray-700 font-bold">Preco</th>
-                <th class="px-5 py-2 text-gray-700 font-bold">Nome</th>
-                <th class="px-5 py-2 text-gray-700 font-bold">Status</th>
+                <th class="px-5 py-2 text-green-200 font-bold">D&H</th>
+                <th class="px-5 py-2 text-green-200 font-bold">Preco</th>
+                <th class="px-5 py-2 text-green-200 font-bold">Nome</th>
+                <th class="px-5 py-2 text-green-200 font-bold">Status</th>
             </tr>
             {% for log in logs %}
             <tr>
-                <td class="px-5 text-sm py-2 text-gray-700">{{ log['data_logs' ]}}<br/>{{ log['hora_evento'] }}</td>
-                <td class="px-5 text-sm py-2 text-gray-600">{{ log['preco'] }}</td>
-                <td class="px-5 text-sm py-2 text-gray-600">{{ log['nome'] }}</td>
+                <td class="px-5 text-sm py-2 text-gray-200">{{ log['data_logs' ]}}<br/>{{ log['hora_evento'] }}</td>
+                <td class="px-5 text-sm py-2 text-gray-200">{{ log['preco'] }}</td>
+                <td class="px-5 text-sm py-2 text-gray-200">{{ log['nome'] }}</td>
                 {% if log['status_pagamento'] == 'paid' %}
                 <td class="px-5 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
                 {% elif log['status_pagamento'] == 'waiting_payment' %}
