@@ -9,7 +9,7 @@
 <body class="bg-gray-900 text-white">
 
 
-    <div class="flex justify-center flex-col p-4 bg-gray-800">
+    <div class="flex justify-center w-full flex-col p-4 bg-gray-800">
         <h3 class="text-green-300 text-xl">Total vendido:</h3>
         <h1 class="text-green-500 text-2xl font-bold">R$ {{ total_vendas }}</h1> 
    </div>
@@ -42,22 +42,22 @@
 
         <table class="bg-gray-800 w-fit text-center shadow-[0_3px_10px_rgb(0,0,0,0.2)]">
             <tr>
-                <th class="px-5 py-2 text-green-200 font-bold">D&H</th>
-                <th class="px-5 py-2 text-green-200 font-bold">Preco</th>
-                <th class="px-5 py-2 text-green-200 font-bold">Nome</th>
-                <th class="px-5 py-2 text-green-200 font-bold">Status</th>
+                <th class="px-3 py-2 text-green-200 font-bold">D&H</th>
+                <th class="px-3 py-2 text-green-200 font-bold">Preco</th>
+                <th class="px-3 py-2 text-green-200 font-bold">Nome</th>
+                <th class="px-3 py-2 text-green-200 font-bold">Status</th>
             </tr>
             {% for log in logs %}
             <tr>
-                <td class="px-5 text-sm py-2 text-gray-200">{{ log['data_logs' ]}}<br/>{{ log['hora_evento'] }}</td>
-                <td class="px-5 text-sm py-2 text-gray-200">{{ log['preco'] }}</td>
-                <td class="px-5 text-sm py-2 text-gray-200">{{ log['nome'] }}</td>
+                <td class="px-3 text-sm py-2 text-gray-200">{{ log['data_logs' ]}}<br/>{{ log['hora_evento'] }}</td>
+                <td class="px-3 text-sm py-2 text-gray-200">{{ log['preco'] }}</td>
+                <td class="px-3 text-sm py-2 text-gray-200">{{ log['nome'] }}</td>
                 {% if log['status_pagamento'] == 'paid' %}
-                <td class="px-5 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
+                <td class="px-3 text-sm py-2"><p class="text-green-500 font-semibold p-1 rounded-xl bg-green-200">Paid</p></td>
                 {% elif log['status_pagamento'] == 'waiting_payment' %}
-                <td class="px-5 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">pendente</p></td>
+                <td class="px-3 text-sm py-2"><p class="text-orange-500 font-semibold p-1 rounded-xl bg-orange-200">pendente</p></td>
                 {% else %}
-                <td class="px-5 text-sm py-2"><p class="text-red-500 font-semibold p-1 rounded-xl bg-red-200">Refused</p></td>
+                <td class="px-3 text-sm py-2"><p class="text-red-500 font-semibold p-1 rounded-xl bg-red-200">Refused</p></td>
                 {% endif %}
             </tr>
             {% endfor %}
