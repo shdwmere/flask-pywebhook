@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, jsonify, request
+import os
+from models import db, Eventos
+from dotenv import load_dotenv
 import requests
 import pytz
 import random, json
@@ -9,9 +12,16 @@ from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
 from modules.email_confirmar_pagamento import email_confirmar_pagamento
 from modules.email_notificar_pix import email_notificar_pix
 
+load_dotenv()
 nome_loja = 'Loja Shoppe'
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
 init(autoreset=True)
 
 @app.route('/')
@@ -28,13 +38,6 @@ def webhook_listener():
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # print("\n")
-    # print(f"{Fore.GREEN}Evento recebido:")
-    # print(f"{Fore.YELLOW}{dados_evento}")
-    # print("\n")
-
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=
-
     # data scraping
     nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
     nome_split = nome.split()[0]
@@ -43,19 +46,20 @@ def webhook_listener():
     status_pagamento = dados_evento.get('data', {}).get('status', 'Status não encontrado')
     preco_total = dados_evento.get('data', {}).get('amount', 'Preço total não encontrado')  # Considerando 'amount' como o total a ser pago
     preco_formatado = "{:.2f}".format(float(preco_total) / 100)  # Convertendo centavos para reais
-    pix_code = dados_evento.get('data', {}).get('pix', {}).get('qrcode', 'Código PIX não encontrado')
+    pix_data = dados_evento.get('data', {}).get('pix')
+    pix_code = pix_data.get('qrcode', 'Código PIX não encontrado') if pix_data else 'Código PIX não encontrado'
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
 
     def imprimir_dados_evento():
         print('\n')
-        print(f'{Fore.YELLOW}=-' * 20)
+        print(f'{Fore.YELLOW}=-' * 8)
         print(f'{Fore.YELLOW}[{data_logs} - {hora_evento}]')
 
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Nome do cliente: {Fore.YELLOW}{nome_split}')
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Preco do produto: {Fore.YELLOW}{preco_formatado}')
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Método de pagamento: {Fore.YELLOW}{payment_method}')
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Status do pagamento: {Fore.YELLOW}{status_pagamento}')
-        print(f'{Fore.YELLOW}=-' * 20)
+        print(f'{Fore.YELLOW}=-' * 8)
         print('\n')
         
     # Obtendo o fuso horário de Brasília
@@ -171,7 +175,19 @@ def show_logs():
     total_vendas = calcular_total_vendas(logs)
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
+@app.route('/armazenar_evento', methods=['POST'])
+def armazenar_evento():
+    new_evento = Eventos(
+        data_compra=request.json['data_compra'],
+        nome_cliente=request.json['nome_cliente'],
+        nome_produto=request.json['nome_produto'],
+        preco_produto=request.json['preco_produto'],
+        metodo_pagamento=request.json['metodo_pagamento']
+    )
 
+    db.session.add(new_evento)
+    db.session.commit()
+    return jsonify({'message': 'Evento armazenado com sucesso!'}, 201)
 
 # execution
 if __name__ == '__main__':
