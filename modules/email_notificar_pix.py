@@ -18,7 +18,7 @@ def email_notificar_pix(email, nome, nome_loja, pix_code):
     mensagem_html = html_template.format(nome=nome, pix_code=pix_code, nome_loja=nome_loja)
     
     try:
-        print(f"\033[1;32m \n[+] Módulo de Notificação PIX carregando...\n\033[0m")
+        print(f"\033[1;32m \n[+] Módulo de Notificação PIX carregando...\033[0m")
         server = smtplib.SMTP_SSL(host_smtp, port=465)
         server.login(remetente, password)
         msg = MIMEMultipart()
@@ -29,7 +29,7 @@ def email_notificar_pix(email, nome, nome_loja, pix_code):
 
         server.sendmail(remetente, destinatario, msg.as_string())
 
-        print(f'\033[1;32m E-mail com codigo PIX enviado. \033[0m')
+        print(f'\033[1;32m [+] E-mail com codigo PIX enviado. \033[0m')
         server.quit()
     except smtplib.SMTPException as e:
         print(f'\033[1;31m Falha ao enviar o e-mail: {str(e)} \033[0m')

@@ -11,9 +11,20 @@ from modules.logs import logs, calcular_total_vendas, filtrar_logs_por_data
 # e-mail modules
 from modules.email_confirmar_pagamento import email_confirmar_pagamento
 from modules.email_notificar_pix import email_notificar_pix
+from modules.email_refused import email_notificar_refused
 
 load_dotenv()
 nome_loja = 'Loja Shoppe'
+
+# Obtendo o fuso horário de Brasília
+fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+data_brasilia = datetime.now(fuso_horario_brasilia)
+data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
+
+# importante
+momento_evento = data_brasilia_formatada
+hora_evento = data_brasilia.strftime('%H:%M:%S')
+data_logs = data_brasilia.strftime('%d/%m/%Y')
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -49,29 +60,7 @@ def webhook_listener():
     pix_data = dados_evento.get('data', {}).get('pix')
     pix_code = pix_data.get('qrcode', 'Código PIX não encontrado') if pix_data else 'Código PIX não encontrado'
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
-
-    def imprimir_dados_evento():
-        print('\n')
-        print(f'{Fore.YELLOW}=-' * 8)
-        print(f'{Fore.YELLOW}[{data_logs} - {hora_evento}]')
-
-        print(f'{Fore.GREEN}[+]{Fore.WHITE} Nome do cliente: {Fore.YELLOW}{nome_split}')
-        print(f'{Fore.GREEN}[+]{Fore.WHITE} Preco do produto: {Fore.YELLOW}{preco_formatado}')
-        print(f'{Fore.GREEN}[+]{Fore.WHITE} Método de pagamento: {Fore.YELLOW}{payment_method}')
-        print(f'{Fore.GREEN}[+]{Fore.WHITE} Status do pagamento: {Fore.YELLOW}{status_pagamento}')
-        print(f'{Fore.YELLOW}=-' * 8)
-        print('\n')
-        
-    # Obtendo o fuso horário de Brasília
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_brasilia = datetime.now(fuso_horario_brasilia)
-    data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
-    
-    # importante
-    momento_evento = data_brasilia_formatada
-    hora_evento = data_brasilia.strftime('%H:%M:%S')
-    data_logs = data_brasilia.strftime('%d/%m/%Y')
-
+           
     # log handling
     logs.append({
         'data_logs': data_logs,
@@ -81,6 +70,17 @@ def webhook_listener():
         'preco': preco_formatado
     })
 
+    data_hora_evento = f'[{data_logs} - {hora_evento}]'
+
+    def imprimir_dados_evento():
+        print(f'{Fore.YELLOW}-' * 12)
+        print(data_hora_evento)
+
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Nome do cliente: {Fore.YELLOW}{nome_split}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Preco do produto: {Fore.YELLOW}{preco_formatado}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Método de pagamento: {Fore.YELLOW}{payment_method}')
+        print(f'{Fore.GREEN}[+]{Fore.WHITE} Status do pagamento: {Fore.YELLOW}{status_pagamento}')
+        print(f'{Fore.YELLOW}-' * 12)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # geradores
@@ -90,8 +90,6 @@ def webhook_listener():
     codigo_gerado = 'BR' + str(doze_chars)
 
     # API Logic Handle
-    uri = "https://djamba-production.up.railway.app/api/pedidos/create/"
-
     payload_cliente = {
     "id_pedido": id_gerado,
     "codigo_rastreio": codigo_gerado,
@@ -101,24 +99,26 @@ def webhook_listener():
     "data_registro": momento_evento,
     }
 
-    # converte os dados em formato JSON
-    corpo_json = json.dumps(payload_cliente)
+    payload_evento = {
+        "data_compra": data_hora_evento,
+        "nome_cliente": nome,
+        "nome_loja": nome_loja,
+        "preco_produto": preco_formatado,
+        "metodo_pagamento": payment_method,
+        "status_pagamento": status_pagamento
+    }
 
-    # definindo Header da requisicao
-    headers = {"Content-Type": "application/json"}
+    
+    def send_to_djambadb(payload_cliente):
+        djamba_create_endpoint = "https://djamba-production.up.railway.app/api/pedidos/create/"
+        headers = {"Content-Type": "application/json"}
+        corpo_json = json.dumps(payload_cliente)
 
-    # handling purcharses logic
-    if status_pagamento == 'paid':
         try:
-            resultado = requests.post(url=uri, data=corpo_json, headers=headers)
-            resultado.raise_for_status()  # Lança uma exceção se o status da resposta não for 2xx
-            resposta = resultado.json() # Converte a resposta em JSON
-
-            imprimir_dados_evento()
-            print(f'{Fore.GREEN}[+] Pagamento aprovado!')
-            print(f'{Fore.GREEN}[+] Pedido registrado com sucesso!')
-            email_confirmar_pagamento(email=email, nome=nome, id_gerado=id_gerado)
-
+            resultado = requests.post(url=djamba_create_endpoint, data=corpo_json, headers=headers)
+            resultado.raise_for_status()  # Raises an exception if the response status is not 2xx
+            resposta = resultado.json()  # Converts the response to JSON
+            print(f'{Fore.GREEN}[+] DjambaDB - Pedido registrado com sucesso!')
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
@@ -126,9 +126,37 @@ def webhook_listener():
         except Exception as e:
             print(f"Erro inesperado: {e}")
 
-    elif status_pagamento == 'waiting_payment':
-        print(f"{Fore.YELLOW}• Pagamento pendente.")
+    def send_to_eventsdb(payload_evento):
+        save_event_endpoint = "http://127.0.0.1:5000/armazenar_evento"
+        headers = {"Content-Type": "application/json"}
+        corpo_json = json.dumps(payload_evento)
+
+        try:
+            resultado = requests.post(url=save_event_endpoint, data=corpo_json, headers=headers)
+            resultado.raise_for_status()  # Raises an exception if the response status is not 2xx
+            print(f'{Fore.GREEN}[+] Evento armazenado com sucesso!')
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao fazer a solicitação: {e}")
+        except ValueError as e:
+            print(f"Erro ao analisar a resposta JSON: {e}")
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
+
+    # handling purcharses logic
+    if status_pagamento == 'paid':
+        print('\n')
+        print(f"{Fore.GREEN}[+] Pagamento aprovado.")
         imprimir_dados_evento()
+        #send_to_djambadb(payload_cliente)
+        send_to_eventsdb(payload_evento)
+        #email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
+        print('\n')
+
+    elif status_pagamento == 'waiting_payment':
+        print('\n')
+        print(f"{Fore.YELLOW}[*] Pagamento pendente.")
+        imprimir_dados_evento()
+        print('\n')
 
         # checa se o pagamento é via PIX e dispara um e-mail de notificação com o código
         if payment_method == 'pix':
@@ -136,8 +164,11 @@ def webhook_listener():
             email_notificar_pix(email=email, nome=nome, nome_loja=nome_loja, pix_code=pix_code)
 
     else:
+        print('\n')
+        print(f"{Fore.RED}[-] Pagamento recusado.")
         imprimir_dados_evento()
-        print("Pagamento recusado.")
+        email_notificar_refused(email=email, nome=nome, nome_loja=nome_loja)
+        print('\n')
     # End API Logic Handle
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -172,18 +203,37 @@ def filtro_status():
 
 @app.route('/logs')
 def show_logs():
+    # Fetch events from the database
+    events = Eventos.query.all()
+
+    # Convert events to logs and add them to the existing logs
+    for event in events:
+        logs.append({
+            'data_logs': data_brasilia_formatada,
+            'hora_evento': hora_evento,
+            'nome': event.nome_cliente,
+            'status_pagamento': event.status_pagamento,
+            'preco': event.preco_produto
+        })
+
     total_vendas = calcular_total_vendas(logs)
+
+    # Render the template with the logs and total sales
+    return render_template('logs.html', logs=logs, total_vendas=total_vendas)
+
+    # Render the template with the logs and total sales
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
 @app.route('/armazenar_evento', methods=['POST'])
 def armazenar_evento():
-    new_evento = Eventos(
+    new_evento = Eventos (
         data_compra=request.json['data_compra'],
         nome_cliente=request.json['nome_cliente'],
-        nome_produto=request.json['nome_produto'],
+        nome_loja=request.json['nome_loja'],
         preco_produto=request.json['preco_produto'],
-        metodo_pagamento=request.json['metodo_pagamento']
-    )
+        metodo_pagamento=request.json['metodo_pagamento'],
+        status_pagamento=request.json['status_pagamento']
+        )
 
     db.session.add(new_evento)
     db.session.commit()

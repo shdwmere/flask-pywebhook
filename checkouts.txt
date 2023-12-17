@@ -44,14 +44,14 @@
             "chargeProcessingFee":true
          }
       ],
-      "status":"waiting_payment",
+      "status":"refused",
       "refunds":[
          
       ],
       "customer":{
          "id":16078910,
-         "name":"xa",
-         "email":"xa@xa.com.br",
+         "name":"Caio",
+         "email":"caioszrm1@gmail.com",
          "phone":"22993331253",
          "address":null,
          "document":{
