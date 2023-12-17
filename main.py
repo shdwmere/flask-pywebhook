@@ -136,6 +136,7 @@ def webhook_listener():
 
         try:
             resultado = requests.post(url=djamba_create_endpoint, data=corpo_json, headers=headers)
+            print(corpo_json) # debug payload_evento json format
             resultado.raise_for_status()  # Raises an exception if the response status is not 2xx
             resposta = resultado.json()  # Converts the response to JSON
             print(f'{Fore.GREEN}[+] DjambaDB - Pedido registrado com sucesso!')
@@ -154,6 +155,7 @@ def webhook_listener():
         try:
             resultado = requests.post(url=save_event_endpoint, data=corpo_json, headers=headers)
             resultado.raise_for_status()  # Raises an exception if the response status is not 2xx
+            resposta = resultado.json() 
             print(f'{Fore.GREEN}[+] FlaskWH - Evento armazenado com sucesso!')
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
