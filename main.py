@@ -82,14 +82,14 @@ def webhook_listener():
     pix_code = pix_data.get('qrcode', 'Código PIX não encontrado') if pix_data else 'Código PIX não encontrado'
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
            
-    # log handling
-    # logs.append({
-    #     'data_logs': data_logs,
-    #     'hora_evento': hora_evento,
-    #     'nome': nome_split,
-    #     'status_pagamento': status_pagamento,
-    #     'preco': preco_formatado
-    # })
+    #log handling
+    logs.append({
+        'data_logs': data_logs,
+        'hora_evento': hora_evento,
+        'nome': nome_split,
+        'status_pagamento': status_pagamento,
+        'preco': preco_formatado
+    })
 
     data_hora_evento = f'[{data_logs} - {hora_evento}]'
 
