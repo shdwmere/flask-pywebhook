@@ -230,12 +230,12 @@ def show_logs():
 @app.route('/armazenar_evento', methods=['POST'])
 def armazenar_evento():
     new_evento = Eventos (
-        data_compra=request.json['data_compra'],
-        nome_cliente=request.json['nome_cliente'],
-        nome_loja=request.json['nome_loja'],
-        preco_produto=request.json['preco_produto'],
-        metodo_pagamento=request.json['metodo_pagamento'],
-        status_pagamento=request.json['status_pagamento']
+        data_compra=webhook_listener.data_hora_evento,
+        nome_cliente=webhook_listener.nome_split,
+        nome_loja=nome_loja,
+        preco_produto=webhook_listener.preco_formatado,
+        metodo_pagamento=webhook_listener.payment_method,
+        status_pagamento=webhook_listener.status_pagamento
         )
 
     db.session.add(new_evento)
