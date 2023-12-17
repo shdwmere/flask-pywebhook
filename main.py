@@ -142,14 +142,14 @@ def webhook_listener():
         except Exception as e:
             print(f"Erro inesperado: {e}")
 
-    # handling purcharses logic
+    # handling purcharses logicc
     if status_pagamento == 'paid':
         print('\n')
         print(f"{Fore.GREEN}[+] Pagamento aprovado.")
         imprimir_dados_evento()
-        #send_to_djambadb(payload_cliente)
+        send_to_djambadb(payload_cliente)
         send_to_eventsdb(payload_evento)
-        #email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
+        email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
         print('\n')
 
     elif status_pagamento == 'waiting_payment':
