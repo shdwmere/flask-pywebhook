@@ -235,8 +235,7 @@ def armazenar_evento():
 
     nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
     nome_split = nome.split()[0]
-    preco_total = dados_evento.get('data', {}).get('amount', 'Preço total não encontrado')
-    preco_formatado = "{:.2f}".format(float(preco_total) / 100)
+    preco_total = str(dados_evento.get('data', {}).get('amount', 'Preço total não encontrado'))
     data_br_string = str(data_logs)
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
     status_pagamento = dados_evento.get('data', {}).get('status', 'Status não encontrado')
@@ -245,7 +244,7 @@ def armazenar_evento():
         data_compra=data_br_string,
         nome_cliente=nome_split,
         nome_loja=nome_loja,
-        preco_produto=preco_formatado,
+        preco_produto=preco_total,
         metodo_pagamento=payment_method,
         status_pagamento=status_pagamento
         )
