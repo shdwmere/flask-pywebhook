@@ -229,18 +229,20 @@ def show_logs():
 
 @app.route('/armazenar_evento', methods=['POST'])
 def armazenar_evento():
+    dados_evento = request.get_json()
+
     new_evento = Eventos (
-        data_compra=webhook_listener.data_hora_evento,
-        nome_cliente=webhook_listener.nome_split,
-        nome_loja=nome_loja,
-        preco_produto=webhook_listener.preco_formatado,
-        metodo_pagamento=webhook_listener.payment_method,
-        status_pagamento=webhook_listener.status_pagamento
+        data_compra=dados_evento.get('data_compra'),
+        nome_cliente=dados_evento.get('nome_cliente'),
+        nome_loja=dados_evento.get('nome_loja'),
+        preco_produto=dados_evento.get('preco_produto'),
+        metodo_pagamento=dados_evento.get('metodo_pagamento'),
+        status_pagamento=dados_evento.get('status_pagamento')
         )
 
     db.session.add(new_evento)
     db.session.commit()
-    return jsonify({'message': 'Evento armazenado com sucesso!'}, 201)
+    return jsonify({'message': 'Evento armazenado com sucesso!'}), 201
 
 # execution
 if __name__ == '__main__':
