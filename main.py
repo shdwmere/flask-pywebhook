@@ -146,7 +146,7 @@ def webhook_listener():
             print(f"Erro inesperado: {e}")
 
     def send_to_eventsdb(payload_evento):
-        save_event_endpoint = "http://127.0.0.1:5000/armazenar_evento"
+        save_event_endpoint = "https://flask-production-82d2.up.railway.app/armazenar_evento"
         headers = {"Content-Type": "application/json"}
         corpo_json = json.dumps(payload_evento)
 
