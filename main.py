@@ -209,7 +209,7 @@ def show_logs():
     # Convert events to logs and add them to the existing logs
     for event in events:
         logs.append({
-            'data_logs': data_brasilia_formatada,
+            'data_logs': data_logs,
             'hora_evento': hora_evento,
             'nome': event.nome_cliente,
             'status_pagamento': event.status_pagamento,
@@ -217,9 +217,6 @@ def show_logs():
         })
 
     total_vendas = calcular_total_vendas(logs)
-
-    # Render the template with the logs and total sales
-    return render_template('logs.html', logs=logs, total_vendas=total_vendas)
 
     # Render the template with the logs and total sales
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
