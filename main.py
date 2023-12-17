@@ -27,8 +27,6 @@ hora_evento = data_brasilia.strftime('%H:%M:%S')
 data_logs = data_brasilia.strftime('%d/%m/%Y')
 
 
-
-
 init(autoreset=True)
 
 def create_app():
@@ -82,7 +80,7 @@ def webhook_listener():
     pix_code = pix_data.get('qrcode', 'Código PIX não encontrado') if pix_data else 'Código PIX não encontrado'
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
            
-    #log handling
+    # log handling
     logs.append({
         'data_logs': data_logs,
         'hora_evento': hora_evento,
@@ -155,7 +153,7 @@ def webhook_listener():
         try:
             resultado = requests.post(url=save_event_endpoint, data=corpo_json, headers=headers)
             resultado.raise_for_status()  # Raises an exception if the response status is not 2xx
-            print(f'{Fore.GREEN}[+] Evento armazenado com sucesso!')
+            print(f'{Fore.GREEN}[+] FlaskWH - Evento armazenado com sucesso!')
         except requests.exceptions.RequestException as e:
             print(f"Erro ao fazer a solicitação: {e}")
         except ValueError as e:
@@ -168,9 +166,9 @@ def webhook_listener():
         print('\n')
         print(f"{Fore.GREEN}[+] Pagamento aprovado.")
         imprimir_dados_evento()
-        send_to_djambadb(payload_cliente)
+        #send_to_djambadb(payload_cliente)
         send_to_eventsdb(payload_evento)
-        email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
+        #email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
         print('\n')
 
     elif status_pagamento == 'waiting_payment':
@@ -194,8 +192,7 @@ def webhook_listener():
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Responder requisicoes com status code OK
-    return '', 200
+    return jsonify({'message': '[+] Novo Evento recebido!'}), 201
 
 
 @app.route('/filtro_data', methods=['GET'])
@@ -233,24 +230,24 @@ def show_logs():
 def armazenar_evento():
     dados_evento = request.get_json()
 
-    nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
-    nome_split = nome.split()[0]
-    preco_total = str(dados_evento.get('data', {}).get('amount', 'Preço total não encontrado'))
-    data_br_string = str(data_logs)
-    payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
-    status_pagamento = dados_evento.get('data', {}).get('status', 'Status não encontrado')
+    data_compra = dados_evento.get('data_compra', 'Data de compra não encontrada')
+    nome_cliente = dados_evento.get('nome_cliente', 'Nome do cliente não encontrado')
+    preco_produto = dados_evento.get('preco_produto', 'Preço do produto não encontrado')
+    metodo_pagamento = dados_evento.get('metodo_pagamento', 'Método de pagamento não encontrado')
+    status_pagamento = dados_evento.get('status_pagamento', 'Status do pagamento não encontrado')
 
     new_evento = Eventos (
-        data_compra=data_br_string,
-        nome_cliente=nome_split,
+        data_compra=data_compra,
+        nome_cliente=nome_cliente,
         nome_loja=nome_loja,
-        preco_produto=preco_total,
-        metodo_pagamento=payment_method,
+        preco_produto=preco_produto,
+        metodo_pagamento=metodo_pagamento,
         status_pagamento=status_pagamento
-        )
+    )
 
     db.session.add(new_evento)
     db.session.commit()
+
     return jsonify({'message': 'Evento armazenado com sucesso!'}), 201
 
 # execution
