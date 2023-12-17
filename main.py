@@ -27,6 +27,8 @@ hora_evento = data_brasilia.strftime('%H:%M:%S')
 data_logs = data_brasilia.strftime('%d/%m/%Y')
 
 
+
+
 init(autoreset=True)
 
 def create_app():
@@ -231,11 +233,17 @@ def show_logs():
 def armazenar_evento():
     dados_evento = request.get_json()
 
+    nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
+    nome_split = nome.split()[0]
+    preco_total = dados_evento.get('data', {}).get('amount', 'Preço total não encontrado')
+    preco_formatado = "{:.2f}".format(float(preco_total) / 100)
+    data_br_string = str(data_logs)
+
     new_evento = Eventos (
-        data_compra=dados_evento.get('data_compra'),
-        nome_cliente=dados_evento.get('nome_cliente'),
-        nome_loja=dados_evento.get('nome_loja'),
-        preco_produto=dados_evento.get('preco_produto'),
+        data_compra=data_br_string,
+        nome_cliente=nome_split,
+        nome_loja=nome_loja,
+        preco_produto=preco_formatado,
         metodo_pagamento=dados_evento.get('metodo_pagamento'),
         status_pagamento=dados_evento.get('status_pagamento')
         )
