@@ -16,23 +16,22 @@ from modules.email_refused import email_notificar_refused
 load_dotenv()
 nome_loja = 'Loja Shoppe'
 
-# Obtendo o fuso horário de Brasília
-fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-data_brasilia = datetime.now(fuso_horario_brasilia)
-data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
-
-# importante
-momento_evento = data_brasilia_formatada
-hora_evento = data_brasilia.strftime('%H:%M:%S')
-data_logs = data_brasilia.strftime('%d/%m/%Y')
-
-
 init(autoreset=True)
+
+# time vars
+fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo') 
+data_brasilia = datetime.now(fuso_horario_brasilia) 
+data_brasilia_formatada = data_brasilia.strftime('%Y-%m-%d')
+momento_evento = str(data_brasilia_formatada ) # formato: AAAA-MM-DD
+data_logs = data_brasilia.strftime('%d/%m/%Y') # formato: DD/MM/AAAA
+hora_evento = data_brasilia.strftime('%H:%M:%S') # formato: HH:MM:SS
+data_hora_evento = f'[{data_logs} - {hora_evento}]' # formato: [DD/MM/AAAA - HH:MM:SS]
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     db.init_app(app)
+
 
     with app.app_context():
         db.create_all()
@@ -40,7 +39,7 @@ def create_app():
         # Fetch events from the database
         events = Eventos.query.all()
 
-        # Convert events to logs and add them to the existing logs
+        # Adicionando os eventos do banco de dados na lista de logs
         for event in events:
             logs.append({
                 'data_logs': data_logs,
@@ -61,13 +60,18 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook_listener():
 
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=
+    # Gerando ID e código de rastreio
+    onze_chars = random.randint(11111111111, 99999999999)
+    doze_chars = random.randint(111111111111, 999999999999)
+    id_gerado = '#' + str(onze_chars)
+    codigo_gerado = 'BR' + str(doze_chars)
+     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
+
     # Capturando dados do evento recebido.
     dados_evento = request.get_json()
 
-    status_pagamento = dados_evento.get('status')
-
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
-
     # data scraping
     nome = dados_evento.get('data', {}).get('customer', {}).get('name', 'Nome não encontrado')
     nome_split = nome.split()[0]
@@ -79,18 +83,8 @@ def webhook_listener():
     pix_data = dados_evento.get('data', {}).get('pix')
     pix_code = pix_data.get('qrcode', 'Código PIX não encontrado') if pix_data else 'Código PIX não encontrado'
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
+     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
            
-    # log handling
-    logs.append({
-        'data_logs': data_logs,
-        'hora_evento': hora_evento,
-        'nome': nome_split,
-        'status_pagamento': status_pagamento,
-        'preco': preco_formatado
-    })
-
-    data_hora_evento = f'[{data_logs} - {hora_evento}]'
-
     def imprimir_dados_evento():
         print(f'{Fore.YELLOW}-' * 12)
         print(data_hora_evento)
@@ -100,14 +94,21 @@ def webhook_listener():
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Método de pagamento: {Fore.YELLOW}{payment_method}')
         print(f'{Fore.GREEN}[+]{Fore.WHITE} Status do pagamento: {Fore.YELLOW}{status_pagamento}')
         print(f'{Fore.YELLOW}-' * 12)
+
+
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=
+    # log handling
+    logs.append({
+        'data_logs': data_logs,
+        'hora_evento': hora_evento,
+        'nome': nome_split,
+        'status_pagamento': status_pagamento,
+        'preco': preco_formatado
+    })
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # geradores
-    onze_chars = random.randint(11111111111, 99999999999)
-    doze_chars = random.randint(111111111111, 999999999999)
-    id_gerado = '#' + str(onze_chars)
-    codigo_gerado = 'BR' + str(doze_chars)
 
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=
     # API Logic Handle
     payload_cliente = {
     "id_pedido": id_gerado,
@@ -120,7 +121,7 @@ def webhook_listener():
 
     payload_evento = {
         "data_compra": data_hora_evento,
-        "nome_cliente": nome,
+        "nome_cliente": nome_split,
         "nome_loja": nome_loja,
         "preco_produto": preco_formatado,
         "metodo_pagamento": payment_method,
@@ -166,9 +167,9 @@ def webhook_listener():
         print('\n')
         print(f"{Fore.GREEN}[+] Pagamento aprovado.")
         imprimir_dados_evento()
-        #send_to_djambadb(payload_cliente)
+        send_to_djambadb(payload_cliente)
         send_to_eventsdb(payload_evento)
-        #email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
+        email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
         print('\n')
 
     elif status_pagamento == 'waiting_payment':
@@ -190,11 +191,11 @@ def webhook_listener():
         print('\n')
     # End API Logic Handle
 
+    return jsonify({'message': '[+] Novo Evento recebido!'}), 201
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    return jsonify({'message': '[+] Novo Evento recebido!'}), 201
 
-
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 @app.route('/filtro_data', methods=['GET'])
 def filtro_data():
     data_selecionada = request.args.get('data_filtrada')
@@ -204,8 +205,10 @@ def filtro_data():
     total_vendas = calcular_total_vendas(logs=logs_filtrados)
 
     return render_template('logs.html', logs=logs_filtrados, total_vendas=total_vendas)
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 @app.route('/filtro_status', methods=['GET'])
 def filtro_status():
     status_selecionado = request.args.get('status_filtrado')
@@ -217,15 +220,20 @@ def filtro_status():
     total_vendas = calcular_total_vendas(logs=logs_filtrados)
 
     return render_template('logs.html', logs=logs_ordenados, total_vendas=total_vendas)
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 @app.route('/logs')
 def show_logs():
     total_vendas = calcular_total_vendas(logs)
 
     # Render the template with the logs and total sales
     return render_template('logs.html', logs=logs, total_vendas=total_vendas)
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 @app.route('/armazenar_evento', methods=['POST'])
 def armazenar_evento():
     dados_evento = request.get_json()
@@ -249,6 +257,7 @@ def armazenar_evento():
     db.session.commit()
 
     return jsonify({'message': 'Evento armazenado com sucesso!'}), 201
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # execution
 if __name__ == '__main__':
