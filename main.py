@@ -26,14 +26,33 @@ momento_evento = data_brasilia_formatada
 hora_evento = data_brasilia.strftime('%H:%M:%S')
 data_logs = data_brasilia.strftime('%d/%m/%Y')
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-db.init_app(app)
-
-with app.app_context():
-    db.create_all()
 
 init(autoreset=True)
+
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+        # Fetch events from the database
+        events = Eventos.query.all()
+
+        # Convert events to logs and add them to the existing logs
+        for event in events:
+            logs.append({
+                'data_logs': data_logs,
+                'hora_evento': hora_evento,
+                'nome': event.nome_cliente,
+                'status_pagamento': event.status_pagamento,
+                'preco': event.preco_produto
+            })
+
+    return app
+
+app = create_app()
 
 @app.route('/')
 def index():
@@ -62,13 +81,13 @@ def webhook_listener():
     payment_method = dados_evento.get('data', {}).get('paymentMethod', 'Método de pagamento não encontrado')
            
     # log handling
-    logs.append({
-        'data_logs': data_logs,
-        'hora_evento': hora_evento,
-        'nome': nome_split,
-        'status_pagamento': status_pagamento,
-        'preco': preco_formatado
-    })
+    # logs.append({
+    #     'data_logs': data_logs,
+    #     'hora_evento': hora_evento,
+    #     'nome': nome_split,
+    #     'status_pagamento': status_pagamento,
+    #     'preco': preco_formatado
+    # })
 
     data_hora_evento = f'[{data_logs} - {hora_evento}]'
 
@@ -203,19 +222,6 @@ def filtro_status():
 
 @app.route('/logs')
 def show_logs():
-    # Fetch events from the database
-    events = Eventos.query.all()
-
-    # Convert events to logs and add them to the existing logs
-    for event in events:
-        logs.append({
-            'data_logs': data_logs,
-            'hora_evento': hora_evento,
-            'nome': event.nome_cliente,
-            'status_pagamento': event.status_pagamento,
-            'preco': event.preco_produto
-        })
-
     total_vendas = calcular_total_vendas(logs)
 
     # Render the template with the logs and total sales
