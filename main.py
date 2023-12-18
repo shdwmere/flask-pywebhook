@@ -169,7 +169,7 @@ def webhook_listener():
         print('\n')
         print(f"{Fore.GREEN}[+] Pagamento aprovado.")
         imprimir_dados_evento()
-        send_to_djambadb(payload_cliente)
+        #send_to_djambadb(payload_cliente)
         send_to_eventsdb(payload_evento)
         email_confirmar_pagamento(email=email, nome=nome, nome_loja=nome_loja, id_gerado=id_gerado)
         print('\n')
